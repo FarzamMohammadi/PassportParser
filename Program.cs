@@ -1,33 +1,33 @@
 ﻿using System;
 using System.IO;
+using System.Text.Json;
 using System.Threading.Tasks;
 using Azure;
 using Azure.AI.FormRecognizer;
-using Azure.AI.FormRecognizer.Models;
 
 namespace PassportParser
 {
     class Program
     {
-        private const string endpoint = "<your-form-recognizer-endpoint>";
-        private const string apiKey = "<your-form-recognizer-api-key>";
+        private const string Endpoint = "YOUR_ENDPOINT";
+        private const string ApiKey = "YOUR_API_KEY";
 
-        private static void Main(string[] args)
+        private static void Main()
         {
-            var passportFilePath = args[0]; //Assume the first argument is the passport image file path
+            const string passportFilePath = @"C:\Users\image.jpg"; 
 
-            var client = AuthenticateClient(endpoint, apiKey);
+            var client = AuthenticateClient();
             RecognizePassportAsync(client, passportFilePath).Wait();
         }
 
-        static FormRecognizerClient AuthenticateClient(string endpoint, string apiKey)
+        private static FormRecognizerClient AuthenticateClient()
         {
-            var credential = new AzureKeyCredential(apiKey);
-            var client = new FormRecognizerClient(new Uri(endpoint), credential);
+            var credential = new AzureKeyCredential(ApiKey);
+            var client = new FormRecognizerClient(new Uri(Endpoint), credential);
             return client;
         }
 
-        static async Task RecognizePassportAsync(FormRecognizerClient client, string passportFilePath)
+        private static async Task RecognizePassportAsync(FormRecognizerClient client, string passportFilePath)
         {
             using var stream = new FileStream(passportFilePath, FileMode.Open);
             var options = new RecognizeContentOptions();
@@ -35,8 +35,7 @@ namespace PassportParser
             var operationResponse = await operation.WaitForCompletionAsync();
             var forms = operationResponse.Value;
 
-            //Print recognized details in JSON format
-            Console.WriteLine(System.Text.Json.JsonSerializer.Serialize(forms));
+            Console.WriteLine(JsonSerializer.Serialize(forms));
         }
     }
 }
